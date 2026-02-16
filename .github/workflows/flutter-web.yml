@@ -1,0 +1,42 @@
+name: Deploy Flutter Web
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+
+      - name: Enable web
+        run: flutter config --enable-web
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build web
+        run: flutter build web --release --base-href /nfc/
+
+      #- name: Deploy to GitHub Pages
+      #  uses: peaceiris/actions-gh-pages@v4
+      ##  with:
+      ##    github_token: ${{ secrets.GITHUB_TOKEN }}
+      #    publish_dir: build/web
+      #    destination_dir: demo
+      - name: Upload to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: build/web
+          server-dir: /nfc/
